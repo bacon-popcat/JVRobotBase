@@ -1,9 +1,18 @@
-public class Intake {
+package org.sciborgs1155.robot;
+
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class Intake extends SubsystemBase {
+    
     static boolean isDown = false;
     static boolean intakeMotorActivated = false;
     static boolean isInAutonomous = false;
     static double SlapDownMotorPower = 0.9;
     static double IntakeMotorPower = 0.5;
+    private final SparkMax topIntakeMotor = new SparkMax(Ports, null)
     /* when you want to begin outtaking (like if it gets jammed or something)
      reverse the motor powers to reverse the spin of the motors */ 
 
