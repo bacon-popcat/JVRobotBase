@@ -11,9 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /* TO DO
-- Auto intake system for autonomous phase (sensors detect game piece then activate the intake)
 - Link button to do stuff (after cad is finished)
--
 */
 
 public class Intake extends SubsystemBase {
@@ -29,17 +27,13 @@ public class Intake extends SubsystemBase {
   double UpPosition = 0;
 
   // Motor variables
-  private final SparkMax Top_IntakeMotor =
-      new SparkMax(
-          1 /*CHANGE THIS LATER WITH THE ACTUAL PORT (Ports.Intake.Top_Intake)*/,
-          MotorType.kBrushless);
+  private final SparkMax Top_IntakeMotor =new SparkMax(1 /*CHANGE THIS LATER WITH THE ACTUAL PORT (Ports.Intake.Top_Intake)*/,MotorType.kBrushless);
   private final SparkMax Bottom_IntakeMotor = new SparkMax(2, MotorType.kBrushless);
   private final SparkMax SlapDown_Motor = new SparkMax(3, MotorType.kBrushless);
   /* when you want to begin outtaking (like if it gets jammed or something)
   reverse the motor powers to reverse the spin of the motors */
   private final RelativeEncoder slapDownEncoder =
-      SlapDown_Motor
-          .getEncoder(); // saves the distance that the slapdown motor spun as 'slapDownEncoder'
+      SlapDown_Motor.getEncoder(); // saves the distance that the slapdown motor spun as 'slapDownEncoder'
 
   public void beginIntakeMotor() {
     // The sign may vary based on design
@@ -71,7 +65,7 @@ public class Intake extends SubsystemBase {
     }
   }
 
-  public void TriggerIntake() { // togggle intake, if its
+  public void TriggerIntake() { // togggle intake, if its activated, stop it, if its not activated, start it
     if (intakeMotorActivated) {
       stopIntakeMotor();
       intakeMotorActivated = false;
@@ -82,40 +76,37 @@ public class Intake extends SubsystemBase {
   }
 
   public Intake() {
-    slapDownEncoder.setPosition(
-        0); // sets the current position of the slapddown motor to 0, or fully up (like the starting
-    // position)
+    slapDownEncoder.setPosition(0); // sets the current position of the slapdown motor to 0, or fully up (like the starting position)
+    //doesnt actually move it just declares the current position as zero
 
     // PID stuff
     SparkMaxConfig config = new SparkMaxConfig();
 
     ClosedLoopConfig pid = config.closedLoop;
-    pid.p(
-        0.1); // Proportional: How strong the motor reacts to error (Error is the difference between
+    pid.p(0.1); 
+    // Proportional: How strong the motor reacts to error (Error is the difference between
     // current and target position).
     // Higher P = fast response
     // Very high P = May cause shaking/oscillation (Basically, do not set it high)
 
-    pid.i(0); /*  Integral: Controls how fast the motor corrects its position;
-                        This is because friction and gravity cause the motor to have trouble rotate to the correct orientation
-                    */
+    pid.i(0); 
+    /*  Integral: Controls how fast the motor corrects its position;
+    This is because friction and gravity cause the motor to have trouble rotate to the correct orientation
+    */
 
     // Examples:
     // 0 = no correction
     // Very low I = correction may fall short
     // High I = correction may overshoot/oscillate
 
-    pid.d(0.01); // Derivative: Controls how fast the motor position changes. Slows down near target
-    // position
-
+    pid.d(0.01); // Derivative: Controls how fast the motor position changes. Slows down near target position
     // Examples:
     // With D = More damping (decrease overtime)
     // High D = May have sluggish/slow movement
-
     // May need to change persistMode based on preference
+
     SlapDown_Motor.configure(config, null, null);
   }
-  ;
 
   public boolean sensorGamePieceDetected() {
     return false;
@@ -126,26 +117,21 @@ public class Intake extends SubsystemBase {
     return Commands.sequence(
         Commands.runOnce(() -> beginIntakeMotor()), // starts the intake motor
         Commands.runOnce(() -> TriggerSlapdown()), // activates slapdown arm
-        Commands.waitSeconds(
-            0.5), // random value, making sure that the ball is fulled intaken before lifitng arm
-        // back up
+        Commands.waitSeconds(0.5), // random value, making sure that the ball is fully intaken before lifitng arm back up
         Commands.runOnce(() -> TriggerSlapdown()) // lifts the arm back up
         );
   }
 
-  public void
-      autoIntakeLoop() { // continuously checks if the sensor detects a game piece, then triggers
-    // intake and slapdown
+  public void autoIntakeLoop() { // continuously checks if the sensor detects a game piece, then triggers intake and slapdown
     if (sensorGamePieceDetected()) {
       autoIntakeSequence().schedule();
       /*
-      when sensor detects game piece, runs
+      when sensor detects game piece, this runs the autoIntakeSequence method above
        */
     }
   }
 
-  public Command autoIntake() { // when this is eventually called (when the robot is in autonomous),
-    // continuously loop the autoIntakeLoop method
+  public Command autoIntake() { // when this is eventually called (when the robot is in autonomous),continuously loop the autoIntakeLoop method
     return run(this::autoIntakeLoop);
   }
 }
