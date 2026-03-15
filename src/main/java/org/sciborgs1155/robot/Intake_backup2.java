@@ -1,3 +1,7 @@
+/*
+ * this is like the code u made before i changed it just making a copy as a backup just in case i mess up the code or smth
+ */
+
 package org.sciborgs1155.robot;
 
 
@@ -32,15 +36,14 @@ public class Intake extends SubsystemBase {
     static double IntakeMotorPower = 0.5;
     static double DownPosition = 10; // *Note*: This is just a placeholder value that needs to be tested
     static double UpPosition = 0;
-
+//
     // Motor variables
     private final static SparkMax Top_IntakeMotor = new SparkMax(Ports.Intake.TOP_INTAKE, MotorType.kBrushless);
     private final static SparkMax Bottom_IntakeMotor = new SparkMax(Ports.Intake.BOTTOM_INTAKE, MotorType.kBrushless);
     private final static SparkMax SlapDown_Motor = new SparkMax(Ports.Intake.SLAPDOWN, MotorType.kBrushless);
     /* when you want to begin outtaking (like if it gets jammed or something)
      reverse the motor powers to reverse the spin of the motors */
-    private final static RelativeEncoder slapDownEncoder = SlapDown_Motor.getEncoder(); //saves the distance that the slapdown motor spun as 'slapDownEncoder'
-
+   
     public static void beginIntakeMotor() {
         // The sign may vary based on design
         Top_IntakeMotor.set(IntakeMotorPower);
@@ -67,11 +70,17 @@ public class Intake extends SubsystemBase {
            
             SlapDown_Motor.getClosedLoopController()
                 .setReference(UpPosition, ControlType.kPosition);
+
+
             isDown = false;
         } else {
             // If the intake isn’t already down, then activate motors to turn it down.
+
+
             SlapDown_Motor.getClosedLoopController()
                 .setReference(DownPosition, ControlType.kPosition);
+
+
             isDown = true;
         }
     }
@@ -80,17 +89,13 @@ public class Intake extends SubsystemBase {
     public static void TriggerIntake() { //togggle intake, if its
          if (intakeMotorActivated) {
             stopIntakeMotor();
-            intakeMotorActivated = false;
          } else {
             beginIntakeMotor();
-            intakeMotorActivated = true;
          }
     }
 
 
     public Intake() {
-        slapDownEncoder.setPosition(0); //sets the current position of the slapddown motor to 0, or fully up (like the starting position)
-
         // PID stuff
         SparkMaxConfig config = new SparkMaxConfig();
 
@@ -118,19 +123,4 @@ public class Intake extends SubsystemBase {
         // May need to change persistMode based on preference
         SlapDown_Motor.configure(config, null, null);
     };
-
-    public boolean sensorGamePieceDetected() {
-        return false;
-        //placeholder, return true if the sensor detects a game piece 
-    }
-
-    public Command autoIntake() {
-        //if isInAutonomous is true, and game piece is detected, activate intake and trigger slapdown
-        while (isInAutonomous) {
-            if (sensorGamePieceDetected()) {
-                beginIntakeMotor();
-                TriggerSlapdown();
-            }           
-        }
-    }
 }
