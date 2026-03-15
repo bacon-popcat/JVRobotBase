@@ -11,6 +11,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 
 /* TO DO
@@ -22,46 +24,46 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
     // Booleans
-    static boolean isDown = false;
-    static boolean intakeMotorActivated = false;
-    static boolean isInAutonomous = false;
+    boolean isDown = false;
+    boolean intakeMotorActivated = false;
+    boolean isInAutonomous = false;
 
 
     // Constants
-    static double SlapDownMotorPower = 0.9;
-    static double IntakeMotorPower = 0.5;
-    static double DownPosition = 10; // *Note*: This is just a placeholder value that needs to be tested
-    static double UpPosition = 0;
+    double SlapDownMotorPower = 0.9;
+    double IntakeMotorPower = 0.5;
+    double DownPosition = 10; // *Note*: This is just a placeholder value that needs to be tested
+    double UpPosition = 0;
 
     // Motor variables
-    private final static SparkMax Top_IntakeMotor = new SparkMax(Ports.Intake.TOP_INTAKE, MotorType.kBrushless);
-    private final static SparkMax Bottom_IntakeMotor = new SparkMax(Ports.Intake.BOTTOM_INTAKE, MotorType.kBrushless);
-    private final static SparkMax SlapDown_Motor = new SparkMax(Ports.Intake.SLAPDOWN, MotorType.kBrushless);
+    private final SparkMax Top_IntakeMotor = new SparkMax(1/*CHANGE THIS LATER WITH THE ACTUAL PORT (Ports.Intake.Top_Intake)*/, MotorType.kBrushless);
+    private final SparkMax Bottom_IntakeMotor = new SparkMax(2, MotorType.kBrushless);
+    private final SparkMax SlapDown_Motor = new SparkMax(3, MotorType.kBrushless);
     /* when you want to begin outtaking (like if it gets jammed or something)
      reverse the motor powers to reverse the spin of the motors */
-    private final static RelativeEncoder slapDownEncoder = SlapDown_Motor.getEncoder(); //saves the distance that the slapdown motor spun as 'slapDownEncoder'
+    private final RelativeEncoder slapDownEncoder = SlapDown_Motor.getEncoder(); //saves the distance that the slapdown motor spun as 'slapDownEncoder'
 
-    public static void beginIntakeMotor() {
+    public void beginIntakeMotor() {
         // The sign may vary based on design
         Top_IntakeMotor.set(IntakeMotorPower);
         Bottom_IntakeMotor.set(-IntakeMotorPower);
     }
 
 
-    public static void reverseIntakeMotor() {
+    public void reverseIntakeMotor() {
         // The sign may vary based on design
         Top_IntakeMotor.set(-IntakeMotorPower);
         Bottom_IntakeMotor.set(IntakeMotorPower);
     }
 
 
-    public static void stopIntakeMotor() {
+    public void stopIntakeMotor() {
         Top_IntakeMotor.stopMotor();
         Bottom_IntakeMotor.stopMotor();
     }
 
 
-    public static void TriggerSlapdown() {
+    public void TriggerSlapdown() {
         if (isDown) {
             // if slap-down is down then gears will activate backwards
            
@@ -76,8 +78,7 @@ public class Intake extends SubsystemBase {
         }
     }
 
-
-    public static void TriggerIntake() { //togggle intake, if its
+    public void TriggerIntake() { //togggle intake, if its
          if (intakeMotorActivated) {
             stopIntakeMotor();
             intakeMotorActivated = false;
@@ -124,13 +125,25 @@ public class Intake extends SubsystemBase {
         //placeholder, return true if the sensor detects a game piece 
     }
 
-    public Command autoIntake() {
-        //if isInAutonomous is true, and game piece is detected, activate intake and trigger slapdown
-        while (isInAutonomous) {
-            if (sensorGamePieceDetected()) {
-                beginIntakeMotor();
-                TriggerSlapdown();
-            }           
+    public Command autoIntakeSequence() {
+        return Commands.sequence(
+            Commands.runOnce(() -> beginIntakeMotor()), //starts the intake motor
+            Commands.runOnce(() -> TriggerSlapdown()), //activates slapdown arm
+            Commands.waitSeconds(0.5), //random value, making sure that the ball is fulled intaken before lifitng arm back up
+            Commands.runOnce(() -> TriggerSlapdown())  //lifts the arm back up 
+        );
+    }
+
+    public void autoIntakeLoop() { //continuously checks if the sensor detects a game piece, then triggers intake and slapdown
+        if(sensorGamePieceDetected()) { 
+            autoIntakeSequence().schedule(); 
+            /*
+            when sensor detects game piece, runs 
+             */
         }
+    }
+
+    public Command autoIntake() { //when this is eventually called (when the robot is in autonomous), continuously loop the autoIntakeLoop method
+        return run(this::autoIntakeLoop);
     }
 }
