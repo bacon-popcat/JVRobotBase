@@ -1,4 +1,4 @@
-package org.sciborgs1155.robot;
+package org.sciborgs1155.robot.Intake;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -16,16 +16,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
   // Booleans
-  boolean isDown = false;
-  boolean intakeMotorActivated = false;
-  boolean isInAutonomous = false;
-
-  // Constants
-  double SlapDownMotorPower = 0.9;
-  double IntakeMotorPower = 0.5;
-  double DownPosition = 10; // *Note*: This is just a placeholder value that needs to be tested
-  double UpPosition = 0;
-
+  private boolean isDown = false;
+  private boolean intakeMotorActivated = false;
+  private boolean isInAutonomous = false;
+  
   // Motor variables
   private final SparkMax Top_IntakeMotor =
       new SparkMax(
@@ -38,17 +32,17 @@ public class Intake extends SubsystemBase {
   private final RelativeEncoder slapDownEncoder =
       SlapDown_Motor
           .getEncoder(); // saves the distance that the slapdown motor spun as 'slapDownEncoder'
-
+  
   public void beginIntakeMotor() {
     // The sign may vary based on design
-    Top_IntakeMotor.set(IntakeMotorPower);
-    Bottom_IntakeMotor.set(-IntakeMotorPower);
+    Top_IntakeMotor.set(IntakeConstants.IntakeMotorPower);
+    Bottom_IntakeMotor.set(-IntakeConstants.IntakeMotorPower); 
   }
 
   public void reverseIntakeMotor() {
     // The sign may vary based on design
-    Top_IntakeMotor.set(-IntakeMotorPower);
-    Bottom_IntakeMotor.set(IntakeMotorPower);
+    Top_IntakeMotor.set(-IntakeConstants.IntakeMotorPower);
+    Bottom_IntakeMotor.set(IntakeConstants.IntakeMotorPower);
   }
 
   public void stopIntakeMotor() {
@@ -60,11 +54,11 @@ public class Intake extends SubsystemBase {
     if (isDown) {
       // if slap-down is down then gears will activate backwards
 
-      SlapDown_Motor.getClosedLoopController().setReference(UpPosition, ControlType.kPosition);
+      SlapDown_Motor.getClosedLoopController().setReference(IntakeConstants.UpPosition, ControlType.kPosition);
       isDown = false;
     } else {
       // If the intake isn’t already down, then activate motors to turn it down.
-      SlapDown_Motor.getClosedLoopController().setReference(DownPosition, ControlType.kPosition);
+      SlapDown_Motor.getClosedLoopController().setReference(IntakeConstants.DownPosition, ControlType.kPosition);
       isDown = true;
     }
   }
@@ -108,7 +102,7 @@ public class Intake extends SubsystemBase {
 
     pid.d(0.01); // Derivative: Controls how fast the motor position changes. Slows down near target
     // position
-    // Examples:
+    // Examples:./gradlew build
     // With D = More damping (decrease overtime)
     // High D = May have sluggish/slow movement
     // May need to change persistMode based on preference
